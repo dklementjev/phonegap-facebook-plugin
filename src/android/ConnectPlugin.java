@@ -200,7 +200,19 @@ public class ConnectPlugin extends CordovaPlugin {
 			}
 			return true;
         } else if (action.equals("getLoginStatus")) {
-        	callbackContext.success(Session.getActiveSession().getState().toString());
+          JSONObject response = new JSONObject(), authResponse;
+          Session activeSession = Session.getActiveSession();
+          response.put("status", "unknown");
+
+          if(activeSession!=null && activeSession.getState().isOpened())
+          {
+            authResponse = new JSONObject();
+            authResponse.put("accessToken", activeSession.getAccessToken());
+            response.put("authResponse", authResponse);
+            response.put("status", "connected");
+          }
+
+          callbackContext.success(response);
         	return true;
         } else if (action.equals("showDialog")) {
             Bundle collect = new Bundle();
