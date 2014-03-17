@@ -64,6 +64,44 @@
             <activity android:label="@string/fb_app_name" android:name="com.facebook.LoginActivity"></activity>
         </config-file>
 
+        <config-file target="custom_rules.xml" parent="/project">
+            <target name="-post-compile">
+                <property name="facebook.plugin.dir" value="FacebookLib"/>
+                <property name="facebook.plugin.absolute.dir" location="${facebook.plugin.dir}"/>
+                <property name="facebook.plugin.classes.absolute.dir" value="${facebook.plugin.absolute.dir}/${out.dir}/classes"/>
+                <property name="facebook.plugin.class" value="com.facebook.android"/>
+                <property name="agentpair.manifest.file" location="${manifest.file}"/>
+
+                <echo message="Regenerating FacebookLib's R.java" />
+                <exec executable="${aapt}">
+                    <arg value="package"/>
+                    <arg value="-f"/>
+                    <arg value="-m"/>
+                    <arg value="-J"/><arg value="${facebook.plugin.absolute.dir}/${gen.absolute.dir}"/>
+                    <arg value="--custom-package"/><arg value="${facebook.plugin.class}"/>
+                    <arg value="--non-constant-id"/>
+                    <arg value="-S"/><arg value="${resource.absolute.dir}"/>
+                    <arg value="-S"/><arg value="${facebook.plugin.absolute.dir}/res"/>
+                    <arg value="-M"/><arg value="${agentpair.manifest.file}"/>
+                    <arg value="-I"/><arg value="${project.target.android.jar}"/>
+                    <arg value="--auto-add-overlay"/>
+                </exec>
+
+                <echo message="Recompiling FacebookLib's R.java"/>
+                <javac
+                        srcdir="${facebook.plugin.absolute.dir}/${gen.absolute.dir}"
+                        destdir="${facebook.plugin.classes.absolute.dir}"
+                        verbose="${verbose}"/>
+
+                <echo message="Repacking FacebookLib's .jar"/>
+                <jar destfile="${facebook.plugin.absolute.dir}/${out.dir}/classes.jar" update="true">
+                    <fileset dir="${facebook.plugin.classes.absolute.dir}"
+                             includes="**/R.class **/R$*.class"/>
+                </jar>
+
+            </target>
+        </config-file>
+
         <!-- copy Facebook Lib project -->
         <source-file src="src/android/facebook/FacebookLib" target-dir="./" />
         
